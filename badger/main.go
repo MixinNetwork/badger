@@ -22,11 +22,9 @@ import (
 	_ "net/http/pprof" //nolint:gosec
 	"runtime"
 
-	"github.com/dustin/go-humanize"
-	"go.opencensus.io/zpages"
-
 	"github.com/dgraph-io/badger/v4/badger/cmd"
 	"github.com/dgraph-io/ristretto/z"
+	"github.com/dustin/go-humanize"
 )
 
 func main() {
@@ -40,7 +38,6 @@ func main() {
 			}
 		}
 	}()
-	zpages.Handle(nil, "/z")
 	runtime.SetBlockProfileRate(100)
 	runtime.GOMAXPROCS(128)
 
