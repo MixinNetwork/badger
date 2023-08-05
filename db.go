@@ -546,6 +546,7 @@ func (db *DB) close() (err error) {
 	db.opt.Infof("Lifetime L0 stalled for: %s\n", time.Duration(db.lc.l0stallsMs.Load()))
 
 	db.blockWrites.Store(1)
+	db.isClosed.Store(1)
 
 	if !db.opt.InMemory {
 		// Stop value GC first.
@@ -631,7 +632,6 @@ func (db *DB) close() (err error) {
 	db.blockCache.Close()
 	db.indexCache.Close()
 
-	db.isClosed.Store(1)
 	db.threshold.close()
 
 	if db.opt.InMemory {
@@ -899,7 +899,7 @@ func (db *DB) sendToWriteCh(entries []*Entry) (*request, error) {
 		size += e.estimateSizeAndSetThreshold(db.valueThreshold())
 		count++
 	}
-	y.NumBytesWrittenUserAdd(db.opt.MetricsEnabled, int64(size))
+	y.NumBytesWrittenUserAdd(db.opt.MetricsEnabled, size)
 	if count >= db.opt.maxBatchCount || size >= db.opt.maxBatchSize {
 		return nil, ErrTxnTooBig
 	}
