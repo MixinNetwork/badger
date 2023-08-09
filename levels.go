@@ -1160,7 +1160,8 @@ func (s *levelsController) fillTablesL0ToL0(cd *compactDef) bool {
 
 func (s *levelsController) fillTablesL0ToLbase(cd *compactDef) bool {
 	if cd.nextLevel.level == 0 {
-		panic("Base level can't be zero.")
+		s.kv.opt.Warningf("fillTablesL0ToLbase %v zero next level\n", cd.nextLevel)
+		return false
 	}
 	// We keep cd.p.adjusted > 0.0 here to allow functions in db.go to artificially trigger
 	// L0->Lbase compactions. Those functions wouldn't be setting the adjusted score.
