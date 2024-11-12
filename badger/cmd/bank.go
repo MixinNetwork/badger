@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	stderrors "errors"
 	"fmt"
 	"log"
 	"math"
@@ -35,7 +36,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/pb"
 	"github.com/dgraph-io/badger/v4/y"
-	"github.com/dgraph-io/ristretto/z"
+	"github.com/dgraph-io/ristretto/v2/z"
 )
 
 var testCmd = &cobra.Command{
@@ -148,7 +149,7 @@ func min(a, b uint64) uint64 {
 	return b
 }
 
-var errAbandoned = errors.New("Transaction abandonded due to insufficient balance")
+var errAbandoned = stderrors.New("Transaction abandonded due to insufficient balance")
 
 func moveMoney(db *badger.DB, from, to int) error {
 	return db.Update(func(txn *badger.Txn) error {
