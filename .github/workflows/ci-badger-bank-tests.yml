@@ -1,0 +1,35 @@
+name: ci-badger-bank-tests
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - images/**
+    branches:
+      - main
+      - release/v*
+
+permissions:
+  contents: read
+
+jobs:
+  badger-bank:
+    runs-on: warp-ubuntu-latest-x64-4x
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install Dependencies
+        run: make dependency
+      - name: Install jemalloc
+        run: make jemalloc
+      - name: Install Badger
+        run: cd badger && go install --race --tags=jemalloc .
+      - name: Run Badger Bank Test
+        run: |
+          #!/bin/bash
+          mkdir bank && cd bank
+          badger bank test -v --dir=. -d=20m

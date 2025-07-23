@@ -1,17 +1,6 @@
 /*
- * Copyright 2018 Dgraph Labs, Inc. and Contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package badger
@@ -438,24 +427,24 @@ func TestCompactionFilePicking(t *testing.T) {
 	for i := 1; i <= 10; i++ {
 		// Each table has difference of 1 between smallest and largest key.
 		tab := createTableWithRange(t, db, 2*i-1, 2*i)
-		addToManifest(t, db, tab, 3)
+		addToManifest(t, db, tab, 3, db.opt)
 		require.NoError(t, l3.replaceTables([]*table.Table{}, []*table.Table{tab}))
 	}
 
 	l2 := db.lc.levels[2]
 	// First table has keys 1 and 4.
 	tab := createTableWithRange(t, db, 1, 4)
-	addToManifest(t, db, tab, 2)
+	addToManifest(t, db, tab, 2, db.opt)
 	require.NoError(t, l2.replaceTables([]*table.Table{}, []*table.Table{tab}))
 
 	// Second table has keys 5 and 12.
 	tab = createTableWithRange(t, db, 5, 12)
-	addToManifest(t, db, tab, 2)
+	addToManifest(t, db, tab, 2, db.opt)
 	require.NoError(t, l2.replaceTables([]*table.Table{}, []*table.Table{tab}))
 
 	// Third table has keys 13 and 18.
 	tab = createTableWithRange(t, db, 13, 18)
-	addToManifest(t, db, tab, 2)
+	addToManifest(t, db, tab, 2, db.opt)
 	require.NoError(t, l2.replaceTables([]*table.Table{}, []*table.Table{tab}))
 
 	cdef := &compactDef{
@@ -490,14 +479,14 @@ func TestCompactionFilePicking(t *testing.T) {
 }
 
 // addToManifest function is used in TestCompactionFilePicking. It adds table to db manifest.
-func addToManifest(t *testing.T, db *DB, tab *table.Table, level uint32) {
+func addToManifest(t *testing.T, db *DB, tab *table.Table, level uint32, opt Options) {
 	change := &pb.ManifestChange{
 		Id:          tab.ID(),
 		Op:          pb.ManifestChange_CREATE,
 		Level:       level,
 		Compression: uint32(tab.CompressionType()),
 	}
-	require.NoError(t, db.manifest.addChanges([]*pb.ManifestChange{change}),
+	require.NoError(t, db.manifest.addChanges([]*pb.ManifestChange{change}, opt),
 		"unable to add to manifest")
 }
 
@@ -652,7 +641,7 @@ func TestL0GCBug(t *testing.T) {
 	require.NoError(t, db2.Close())
 }
 
-// Regression test for https://github.com/dgraph-io/badger/issues/1126
+// Regression test for https://github.com/hypermodeinc/badger/issues/1126
 //
 // The test has 3 steps
 // Step 1 - Create badger data. It is necessary that the value size is
@@ -690,7 +679,7 @@ func TestWindowsDataLoss(t *testing.T) {
 			v := []byte("barValuebarValuebarValuebarValuebarValue")
 			require.Greater(t, len(v), db.valueThreshold())
 
-			//32 bytes length and now it's not working
+			// 32 bytes length and now it's not working
 			err := txn.Set(key, v)
 			require.NoError(t, err)
 			keyList = append(keyList, key)

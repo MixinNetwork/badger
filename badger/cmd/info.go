@@ -1,17 +1,6 @@
 /*
- * Copyright 2017 Dgraph Labs, Inc. and Contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package cmd
@@ -27,8 +16,7 @@ import (
 	"strings"
 	"time"
 
-	humanize "github.com/dustin/go-humanize"
-	"github.com/pkg/errors"
+	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/dgraph-io/badger/v4"
@@ -121,7 +109,7 @@ func handleInfo(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if err := printInfo(sstDir, vlogDir); err != nil {
+	if err := printInfo(sstDir, vlogDir, bopt); err != nil {
 		return y.Wrap(err, "failed to print information in MANIFEST file")
 	}
 
@@ -209,7 +197,7 @@ func lookup(db *badger.DB) error {
 
 	itr.Rewind()
 	if !itr.Valid() {
-		return errors.Errorf("Unable to rewind to key:\n%s", hex.Dump(key))
+		return fmt.Errorf("Unable to rewind to key:\n%s", hex.Dump(key))
 	}
 	fmt.Println()
 	item := itr.Item()
@@ -332,7 +320,7 @@ func readDir(dir string) ([]fs.FileInfo, error) {
 	return infos, err
 }
 
-func printInfo(dir, valueDir string) error {
+func printInfo(dir, valueDir string, bopt badger.Options) error {
 	if dir == "" {
 		return fmt.Errorf("--dir not supplied")
 	}
@@ -348,7 +336,7 @@ func printInfo(dir, valueDir string) error {
 			fp.Close()
 		}
 	}()
-	manifest, truncOffset, err := badger.ReplayManifestFile(fp, opt.externalMagicVersion)
+	manifest, truncOffset, err := badger.ReplayManifestFile(fp, opt.externalMagicVersion, bopt)
 	if err != nil {
 		return err
 	}

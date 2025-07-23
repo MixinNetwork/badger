@@ -1,17 +1,6 @@
 /*
- * Copyright 2017 Dgraph Labs, Inc. and Contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package badger
@@ -206,9 +195,18 @@ func TestOverlappingKeyRangeError(t *testing.T) {
 func TestManifestRewrite(t *testing.T) {
 	dir, err := os.MkdirTemp("", "badger-test")
 	require.NoError(t, err)
-	defer removeDir(dir)
+
+	db, err := Open(DefaultOptions(dir))
+	require.NoError(t, err, "error while opening db")
+
+	defer func() {
+		require.NoError(t, db.Close())
+		removeDir(dir)
+	}()
+
 	deletionsThreshold := 10
-	mf, m, err := helpOpenOrCreateManifestFile(dir, false, 0, deletionsThreshold)
+
+	mf, m, err := helpOpenOrCreateManifestFile(dir, false, 0, deletionsThreshold, db.opt)
 	defer func() {
 		if mf != nil {
 			mf.close()
@@ -220,7 +218,7 @@ func TestManifestRewrite(t *testing.T) {
 
 	err = mf.addChanges([]*pb.ManifestChange{
 		newCreateChange(0, 0, 0, 0),
-	})
+	}, db.opt)
 	require.NoError(t, err)
 
 	for i := uint64(0); i < uint64(deletionsThreshold*3); i++ {
@@ -228,13 +226,13 @@ func TestManifestRewrite(t *testing.T) {
 			newCreateChange(i+1, 0, 0, 0),
 			newDeleteChange(i),
 		}
-		err := mf.addChanges(ch)
+		err := mf.addChanges(ch, db.opt)
 		require.NoError(t, err)
 	}
 	err = mf.close()
 	require.NoError(t, err)
 	mf = nil
-	mf, m, err = helpOpenOrCreateManifestFile(dir, false, 0, deletionsThreshold)
+	mf, m, err = helpOpenOrCreateManifestFile(dir, false, 0, deletionsThreshold, db.opt)
 	require.NoError(t, err)
 	require.Equal(t, map[uint64]TableManifest{
 		uint64(deletionsThreshold * 3): {Level: 0},
@@ -246,6 +244,12 @@ func TestConcurrentManifestCompaction(t *testing.T) {
 	require.NoError(t, err)
 	defer removeDir(dir)
 
+	db, err := Open(DefaultOptions(dir))
+	require.NoError(t, err, "error while opening db")
+	defer func() {
+		require.NoError(t, db.Close())
+	}()
+
 	// overwrite the sync function to make this race condition easily reproducible
 	syncFunc = func(f *os.File) error {
 		// effectively making the Sync() take around 1s makes this reproduce every time
@@ -253,7 +257,7 @@ func TestConcurrentManifestCompaction(t *testing.T) {
 		return f.Sync()
 	}
 
-	mf, _, err := helpOpenOrCreateManifestFile(dir, false, 0, 0)
+	mf, _, err := helpOpenOrCreateManifestFile(dir, false, 0, 0, db.opt)
 	require.NoError(t, err)
 
 	cs := &pb.ManifestChangeSet{}
@@ -271,7 +275,7 @@ func TestConcurrentManifestCompaction(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func() {
 			defer wg.Done()
-			require.NoError(t, mf.addChanges(cs.Changes))
+			require.NoError(t, mf.addChanges(cs.Changes, db.opt))
 		}()
 	}
 	wg.Wait()
