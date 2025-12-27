@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -185,7 +185,7 @@ func getSampleKeys(db *badger.DB, sampleSize int) ([][]byte, error) {
 	count := 0
 	stream := db.NewStreamAt(math.MaxUint64)
 
-	// overide stream.KeyToList as we only want keys. Also
+	// override stream.KeyToList as we only want keys. Also
 	// we can take only first version for the key.
 	stream.KeyToList = func(key []byte, itr *badger.Iterator) (*pb.KVList, error) {
 		l := &pb.KVList{}

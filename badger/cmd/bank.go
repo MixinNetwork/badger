@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -139,7 +139,7 @@ func min(a, b uint64) uint64 {
 	return b
 }
 
-var errAbandoned = stderrors.New("Transaction abandonded due to insufficient balance")
+var errAbandoned = stderrors.New("Transaction abandoned due to insufficient balance")
 
 func moveMoney(db *badger.DB, from, to int) error {
 	return db.Update(func(txn *badger.Txn) error {
@@ -206,7 +206,7 @@ func get(txn *badger.Txn, k []byte) (*badger.Item, error) {
 	return nil, badger.ErrKeyNotFound
 }
 
-// seekTotal retrives the total of all accounts by seeking for each account key.
+// seekTotal retrieves the total of all accounts by seeking for each account key.
 func seekTotal(txn *badger.Txn) ([]account, error) {
 	expected := uint64(numAccounts) * initialBal
 	var accounts []account
@@ -298,7 +298,7 @@ func compareTwo(db *badger.DB, before, after uint64) {
 
 func runDisect(cmd *cobra.Command, args []string) error {
 	// The total did not match up. So, let's disect the DB to find the
-	// transction which caused the total mismatch.
+	// transaction which caused the total mismatch.
 	db, err := badger.OpenManaged(badger.DefaultOptions(sstDir).
 		WithValueDir(vlogDir).
 		WithReadOnly(true).

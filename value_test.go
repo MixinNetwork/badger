@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1013,7 +1013,7 @@ func BenchmarkReadWrite(b *testing.B) {
 	}
 }
 
-// Regression test for https://github.com/hypermodeinc/badger/issues/817
+// Regression test for https://github.com/dgraph-io/badger/issues/817
 // This test verifies if fully corrupted memtables are deleted on reopen.
 func TestValueLogTruncate(t *testing.T) {
 	dir, err := os.MkdirTemp("", "badger-test")
@@ -1050,7 +1050,7 @@ func TestValueLogTruncate(t *testing.T) {
 	fileCountAfterCorruption := len(db.Tables()) + len(db.imm) + 1 // +1 for db.mt
 	// We should have one memtable and one sst file.
 	require.Equal(t, fileCountBeforeCorruption+1, fileCountAfterCorruption)
-	// maxFid will be 2 because we increment the max fid on DB open everytime.
+	// maxFid will be 2 because we increment the max fid on DB open every time.
 	require.Equal(t, 2, int(db.vlog.maxFid))
 	require.NoError(t, db.Close())
 }
@@ -1103,7 +1103,7 @@ func TestValueEntryChecksum(t *testing.T) {
 
 		require.NoError(t, db.Close())
 	})
-	// Regression test for https://github.com/hypermodeinc/badger/issues/1049
+	// Regression test for https://github.com/dgraph-io/badger/issues/1049
 	t.Run("Corruption", func(t *testing.T) {
 		dir, err := os.MkdirTemp("", "badger-test")
 		require.NoError(t, err)

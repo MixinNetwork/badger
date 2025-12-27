@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -327,4 +327,48 @@ func TestAllocatorReuse(t *testing.T) {
 		require.NoError(t, err)
 	}
 	t.Logf("Allocator: %s\n", a)
+}
+
+func TestSafeCopy_Issue2067(t *testing.T) {
+	type args struct {
+		a   []byte
+		src []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want []byte
+	}{
+		{
+			name: "Nil src should return empty slice not nil",
+			args: args{a: nil, src: nil},
+			want: []byte{},
+		},
+		{
+			name: "Empty src should return empty slice not nil",
+			args: args{a: nil, src: []byte{}},
+			want: []byte{},
+		},
+		{
+			name: "Normal src should return src content",
+			args: args{a: nil, src: []byte("hello")},
+			want: []byte("hello"),
+		},
+		{
+			name: "Buffer reuse with nil src should return empty slice",
+			args: args{a: make([]byte, 10), src: nil},
+			want: []byte{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := SafeCopy(tt.args.a, tt.args.src)
+			require.Equal(t, tt.want, got)
+
+			// Explicit check for nil vs empty slice distinction
+			if len(tt.want) == 0 {
+				require.NotNil(t, got, "SafeCopy returned nil, but we expected an empty slice []byte{}")
+			}
+		})
+	}
 }

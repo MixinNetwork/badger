@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,7 +38,7 @@ func TestTableIndex(t *testing.T) {
 		opts Options
 	}{
 		{
-			name: "No encyption/compression",
+			name: "No encryption/compression",
 			opts: Options{
 				BlockSize:          4 * 1024,
 				BloomFalsePositive: 0.01,
